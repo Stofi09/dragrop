@@ -1,0 +1,523 @@
+﻿@page
+@model Dragdrop.Pages.report.reportModel
+@{
+}
+<div class="container mt-4">
+    <h2>Report an Issue</h2>
+
+    <form method="post" enctype="multipart/form-data" id="reportForm">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Input.Title" class="form-label"></label>
+                            <input asp-for="Input.Title" class="form-control" />
+                            <span asp-validation-for="Input.Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Description" class="form-label"></label>
+                            <div id="editorContainer"
+                                 class="form-control editor-container"
+                                 contenteditable="true">
+                            </div>
+                            <input type="hidden" asp-for="Input.Description" id="descriptionInput" />
+                            <span asp-validation-for="Input.Description" class="text-danger"></span>
+                            <small class="text-muted">
+                                Press Ctrl+V to paste screenshots or drag and drop images here
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.StepsToReproduce" class="form-label"></label>
+                            <textarea asp-for="Input.StepsToReproduce" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Input.StepsToReproduce" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.ExpectedBehavior" class="form-label"></label>
+                                    <textarea asp-for="Input.ExpectedBehavior" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Input.ExpectedBehavior" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label asp-for="Input.ActualBehavior" class="form-label"></label>
+                                    <textarea asp-for="Input.ActualBehavior" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="Input.ActualBehavior" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Input.Environment" class="form-label"></label>
+                            <textarea asp-for="Input.Environment" class="form-control" rows="2"
+                                      placeholder="Browser version, OS, etc."></textarea>
+                            <span asp-validation-for="Input.Environment" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Attachments</h5>
+                        <div id="attachmentsList" class="mb-3">
+                            <!-- Attachments will be listed here -->
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+    <style>
+        .editor-container {
+            min-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            background-color: #fff;
+        }
+
+        .editor-container:focus {
+            color: #212529;
+            background-color: #fff;
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .editor-container img {
+            max-width: 100%;
+            margin: 10px 0;
+        }
+
+        .attachment-preview {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+        }
+
+        .attachment-preview img {
+            max-width: 150px;
+            max-height: 150px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 5px;
+        }
+
+        .remove-attachment {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            line-height: 24px;
+            cursor: pointer;
+        }
+
+        .drag-over {
+            background-color: #e9ecef;
+            border: 2px dashed #6c757d !important;
+        }
+
+        .editor-container {
+        min-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        padding: 0.375rem 0.75rem;
+        background-color: #fff;
+    }
+
+    .editor-container:focus {
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    .editor-container.is-invalid {
+        border-color: #dc3545;
+        padding-right: calc(1.5em + 0.75rem);
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right calc(0.375em + 0.1875rem) center;
+        background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+    }
+
+    .editor-container img {
+        max-width: 100%;
+        margin: 10px 0;
+        cursor: pointer;
+    }
+
+    .attachment-preview {
+        position: relative;
+        display: inline-block;
+        margin: 10px;
+    }
+
+    .attachment-preview img {
+        max-width: 150px;
+        max-height: 150px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 5px;
+        object-fit: contain;
+    }
+
+    .attachment-name {
+        font-size: 0.8rem;
+        text-align: center;
+        margin-top: 5px;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .remove-attachment {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        text-align: center;
+        line-height: 24px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .remove-attachment:hover {
+        background: #bb2d3b;
+    }
+
+    .drag-over {
+        background-color: #e9ecef;
+        border: 2px dashed #6c757d !important;
+    }
+
+    /* Loading spinner styles */
+    .spinner-border {
+        margin-right: 0.5rem;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 768px) {
+        .attachment-preview img {
+            max-width: 120px;
+            max-height: 120px;
+        }
+    }
+    </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const editorContainer = document.getElementById('editorContainer');
+        const descriptionInput = document.getElementById('descriptionInput');
+        const attachmentsList = document.getElementById('attachmentsList');
+        const form = document.getElementById('reportForm');
+
+        let attachments = new Map(); // Store files with unique IDs
+        let counter = 0; // For generating unique IDs
+
+        // Initialize form validation
+        const createFormValidator = () => {
+            const validateDescription = () => {
+                const description = editorContainer.textContent.trim();
+                if (!description) {
+                    editorContainer.classList.add('is-invalid');
+                    return false;
+                }
+                editorContainer.classList.remove('is-invalid');
+                return true;
+            };
+
+            editorContainer.addEventListener('blur', validateDescription);
+
+            form.addEventListener('submit', function (event) {
+                if (!validateDescription()) {
+                    event.preventDefault();
+                    return false;
+                }
+                return true;
+            });
+        };
+
+        // Handle paste events
+        editorContainer.addEventListener('paste', async function (event) {
+            event.preventDefault();
+
+            // Handle text paste
+            const text = event.clipboardData.getData('text/plain');
+            if (text) {
+                document.execCommand('insertText', false, text);
+            }
+
+            // Handle image paste
+            const items = event.clipboardData?.items;
+            if (!items) return;
+
+            for (let item of items) {
+                if (item.type.startsWith('image/')) {
+                    const file = item.getAsFile();
+                    if (!file) continue;
+
+                    handleNewFile(file);
+                }
+            }
+        });
+
+        // Handle drag and drop
+        editorContainer.addEventListener('dragover', function (event) {
+            event.preventDefault();
+            editorContainer.classList.add('drag-over');
+        });
+
+        editorContainer.addEventListener('dragleave', function (event) {
+            event.preventDefault();
+            editorContainer.classList.remove('drag-over');
+        });
+
+        editorContainer.addEventListener('drop', function (event) {
+            event.preventDefault();
+            editorContainer.classList.remove('drag-over');
+
+            const files = event.dataTransfer?.files;
+            if (!files) return;
+
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    handleNewFile(file);
+                }
+            }
+        });
+
+        function handleNewFile(file) {
+            // Check if adding this file would exceed total limit
+            const MAX_TOTAL_SIZE = 15 * 1024 * 1024; // 15MB in bytes
+            let currentTotal = 0;
+            attachments.forEach(existingFile => {
+                currentTotal += existingFile.size;
+            });
+
+            if (currentTotal + file.size > MAX_TOTAL_SIZE) {
+                alert('Adding this file would exceed the total 15MB limit');
+                return;
+            }
+
+            const fileId = `attachment-${counter++}`;
+            attachments.set(fileId, file);
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // Add preview to attachments list
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'attachment-preview';
+                previewDiv.id = fileId;
+                previewDiv.innerHTML = `
+                            <img src="${e.target.result}" alt="Attached image" />
+                            <div class="remove-attachment" onclick="removeAttachment('${fileId}')">&times;</div>
+                            <div class="attachment-name">${file.name}</div>
+                        `;
+                attachmentsList.appendChild(previewDiv);
+
+                // Insert a smaller version into the editor
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.style.maxWidth = '300px';
+                img.dataset.fileId = fileId;
+
+                // If there's a cursor position, insert at cursor
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    if (editorContainer.contains(range.commonAncestorContainer)) {
+                        range.insertNode(img);
+                        range.collapse(false);
+                        const br = document.createElement('br');
+                        range.insertNode(br);
+                        range.collapse(false);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                        return;
+                    }
+                }
+
+                // Fallback: append to end
+                editorContainer.appendChild(img);
+                editorContainer.appendChild(document.createElement('br'));
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Make removeAttachment function globally available
+        window.removeAttachment = function (fileId) {
+            attachments.delete(fileId);
+            document.getElementById(fileId)?.remove();
+
+            // Remove from editor
+            const editorImage = editorContainer.querySelector(`img[data-file-id="${fileId}"]`);
+            if (editorImage) {
+                const br = editorImage.nextElementSibling;
+                if (br?.tagName === 'BR') br.remove();
+                editorImage.remove();
+            }
+        };
+
+        // Handle form submission
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            event.preventDefault();
+
+            // Check total file size (15MB limit)
+            const MAX_TOTAL_SIZE = 15 * 1024 * 1024; // 15MB in bytes
+            let totalSize = 0;
+            attachments.forEach(file => {
+                totalSize += file.size;
+            });
+
+            if (totalSize > MAX_TOTAL_SIZE) {
+                alert('Total file size exceeds 15MB limit');
+                return;
+            }
+
+            // Get the HTML content
+            const htmlContent = editorContainer.innerHTML;
+
+            // Create a temporary div to help with text extraction
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+
+            // Replace each image with a placeholder and count them
+            let imageCount = 1;
+            tempDiv.querySelectorAll('img').forEach(img => {
+                img.replaceWith(`[Image${imageCount++}]`);
+            });
+
+            // Store both versions
+            descriptionInput.value = htmlContent;
+
+            // Add the text version with placeholders as a separate field
+            const textInput = document.createElement('input');
+            textInput.type = 'hidden';
+            textInput.name = 'Input.TextDescription';
+            textInput.value = tempDiv.textContent.trim();
+            form.appendChild(textInput);
+
+            // Create FormData and append all form fields
+            const formData = new FormData(form);
+
+            // Add all files with unique names to prevent overwriting
+            attachments.forEach((file, fileId) => {
+                const uniqueName = `${Date.now()}-${file.name}`;
+                formData.append('Input.Files', file, uniqueName);
+            });
+
+            // Show loading state
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Submitting...
+                    `;
+
+            // Submit the form using fetch
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else if (response.ok) {
+                    return response.text().then(html => {
+                        // If we got HTML back, it might be validation errors
+                        document.documentElement.innerHTML = html;
+                    });
+                } else {
+                    throw new Error('Submission failed');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the report. Please try again.');
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            });
+        });
+
+        // Handle keyboard deletion of images in editor
+        editorContainer.addEventListener('keydown', function (event) {
+            if (event.key === 'Delete' || event.key === 'Backspace') {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const element = range.startContainer.parentElement;
+
+                    // Check if we're deleting an image
+                    if (element.tagName === 'IMG' ||
+                        (range.startContainer === range.endContainer &&
+                            range.startOffset === range.endOffset &&
+                            element.previousElementSibling?.tagName === 'IMG')) {
+
+                        const img = element.tagName === 'IMG' ?
+                            element :
+                            element.previousElementSibling;
+
+                        const fileId = img.dataset.fileId;
+                        if (fileId) {
+                            removeAttachment(fileId);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Monitor changes in editor content
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'childList') {
+                    // Check for removed images
+                    mutation.removedNodes.forEach(node => {
+                        if (node.tagName === 'IMG') {
+                            const fileId = node.dataset.fileId;
+                            if (fileId && attachments.has(fileId)) {
+                                removeAttachment(fileId);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        observer.observe(editorContainer, {
+            childList: true,
+            subtree: true
+        });
+
+        // Initialize form validation
+        createFormValidator();
+    });
+</script>
